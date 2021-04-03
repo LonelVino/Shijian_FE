@@ -1,0 +1,170 @@
+#!/bin/sh
+#
+# Tiaozhan Docker Image Configure Tool
+#
+# Copyright (C) 2016 Tiaozhan Net. All Rights Reserved.
+#
+# Maintainer : gho1920 <lixiang@tiaozhan.com>
+#              Luffbee <liuyifan@tiaozhan.com>
+
+CONF_SHA1=
+
+newconf() {
+    if [ "$CONF_SHA1" != "`sha1sum configure`" ];then
+        echo "$0: [NOTICE] The configure has upgraded, please add it to git."
+    fi
+    /bin/sh "$0" --no-upgrade "$@"
+    exit "$?"
+}
+
+if [ "$1" != "--no-upgrade" ];then
+    CONF_SHA1=`sha1sum configure`
+    curl -m 5 -sSLOf 'https://git.tiaozhan.com/tiaozhan-op/configure/raw/master/configure' && \
+        newconf "$@" || \
+        echo "$0: [WARNING] Your configure script may be a old one."
+else shift
+fi
+
+set -e
+
+## Options
+
+#export DOCKER_ENV=/home/jenkins/env/
+help=false
+opt=
+PROJECT=
+ENV=
+DOCKER_CONTAIN=
+IMAGE=
+TAG=
+REF_SHA1=
+for option
+do
+    opt="$opt `echo $option | sed -e \"s/\(--[^=]*=\)\(.* .*\)/\1'\2'/\"`"
+
+    case "$option" in
+        -*=*) value=`echo "$option" | sed -e 's/[-_a-zA-Z0-9]*=//'` ;;
+           *) value="" ;;
+    esac
+
+    case "$option" in
+        --help)                       help=yes                   ;;
+        --name=*)                     PROJECT="$value"           ;;
+        --env-dir=*)                  ENV="$value"               ;;
+        --container-name=*)           DOCKER_CONTAIN="$value"    ;;
+        --image=*)                    IMAGE="$value"             ;;
+        --tag=*)                      TAG="$value"               ;;
+        --ref-sha1=*)                 REF_SHA1="$value"          ;;
+        *)
+            echo "$0: [ERROR] unknown option \"$option\"."
+            exit 1
+        ;;
+    esac
+done
+
+CONFIGURE="$opt"
+
+if [ $help = yes ]; then
+cat << END
+Usage: configure [options...] --name=NAME
+
+Options:
+  --help                              print this message
+  --name=NAME                         set project_name (must be unique)
+  --env-dir=DIR                       set docker env directory (default: config/)
+  --container-name=NAME               set docker contain name (default: project_name)
+  --image=NAME                        set docker image name (default: registry.op.tiaozhan.com/project_name)
+  --tag=NAME                          set docker image tag (default: latest)
+END
+    exit 0
+fi
+
+if [ ! $PROJECT ]; then
+    echo "$0: [ERROR] --name can't be empty, abort."
+    exit 1
+fi
+
+PROJECT=$(echo $PROJECT  | tr '[A-Z]' '[a-z]')
+DOCKER_ENV=${DOCKER_ENV:-`realpath ${ENV:-'./config/'}`'/'}
+DOCKER_CONTAIN=${DOCKER_CONTAIN:-${PROJECT}}
+IMAGE=${IMAGE:-"registry.op.tiaozhan.com/${PROJECT}"}
+TAG=${TAG:-"latest"}
+DOCKER_IMAGE="${IMAGE}:${TAG}"
+echo "$0: [INFO] Configure docker image: ${DOCKER_IMAGE}"
+echo "$0: [INFO] Container name: ${DOCKER_CONTAIN}"
+
+test -f 'extends.yml' && rm 'extends.yml' 
+test -f ${DOCKER_ENV}${PROJECT}'.yml' && cp ${DOCKER_ENV}${PROJECT}'.yml' 'extends.yml'
+test -f 'extends.yml' || (echo ${PROJECT}':' > extends.yml && echo '  restart: always' >> extends.yml && echo "$0: [WARN] can't find DOCKER_ENV file, ignored" )
+
+cat << COMPOSE > docker-compose.yml
+${DOCKER_CONTAIN}:
+  container_name: ${DOCKER_CONTAIN}
+  image: ${DOCKER_IMAGE}
+  restart: always
+  hostname: ${DOCKER_CONTAIN}
+  extends:
+    file: extends.yml
+    service: ${PROJECT}
+COMPOSE
+
+cat << END > Makefile
+default:	build
+
+stop: 
+	- docker stop ${DOCKER_CONTAIN} 2> /dev/null
+	- docker rm ${DOCKER_CONTAIN} 2> /dev/null
+	- docker rmi ${DOCKER_IMAGE} 2> /dev/null
+	
+clean: stop
+	- rm extends.yml 2> /dev/null
+	- rm docker-compose.yml 2> /dev/null
+	- rm version 2> /dev/null
+
+build: stop
+	docker build -t ${DOCKER_IMAGE} .
+
+start:
+	docker-compose up
+
+startd:
+	docker-compose up -d
+
+test:
+	docker-compose run --rm ${DOCKER_CONTAIN} test
+
+Version:
+	docker-compose run --rm ${DOCKER_CONTAIN} version
+
+shell:
+	docker-compose run --rm ${DOCKER_CONTAIN} /bin/sh
+
+push:
+	docker push ${DOCKER_IMAGE}
+
+pull:
+	docker pull ${DOCKER_IMAGE}
+
+deploy_test: stop build test push clean
+
+deploy: stop pull startd 
+
+unit: stop build test
+
+run: stop build startd 
+
+END
+
+if [ ! $REF_SHA1 ]; then
+    REF_SHA1=$(git rev-parse HEAD) || ( echo "$0: [ERROR] cannot find current ref SHA1, you must supply it using '--ref-sha1=' manually" && exit 1 )
+fi
+
+cat << EOF > version
+image: ${DOCKER_IMAGE}
+configure_date: $(TZ='CST-8' date +%Y-%m-%d\ %T)
+build_date: NOT YET
+ref_sha1: ${REF_SHA1}
+
+EOF
+
+echo "$0: [INFO] configure finished."

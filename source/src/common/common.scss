@@ -1,0 +1,55 @@
+@import './config.scss';
+
+// 去掉各种边距，方便计算
+* {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+// 去掉所有列表的样式
+li {
+  list-style: none;
+}
+
+// 统一基本字体，和颜色
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #3a0c00;
+}
+
+// 不可选中的元素
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Chrome/Safari/Opera */
+  -khtml-user-select: none; /* Konqueror */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently not supported by any browser */
+}
+
+// section统一居中最大宽度
+.section {
+  max-width: $main-width;
+  margin: 0 auto;
+}
+
+// 警告弹框统一不设置宽度
+.el-message-box__wrapper .el-message-box {
+  width: inherit;
+}
+
+// // 自定义字体
+// @font-face {
+//   font-family: title;
+//   src:url('~@/zhsrxt.ttf') format('truetype');
+// }
+
+@media screen and (max-width: 540px) {
+  .el-table__empty-text {
+    font-size: 12px;
+    margin-left: -200px;
+  }
+}

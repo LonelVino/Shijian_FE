@@ -1,0 +1,55 @@
+{
+  "_from": "tinymce-imageupload",
+  "_id": "tinymce-imageupload@1.0.5",
+  "_inBundle": false,
+  "_integrity": "sha1-m0mdDSdqS2sjtZW8LIaytKJOCh8=",
+  "_location": "/tinymce-imageupload",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "tinymce-imageupload",
+    "name": "tinymce-imageupload",
+    "escapedName": "tinymce-imageupload",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#DEV:/",
+    "#USER"
+  ],
+  "_resolved": "http://registry.npm.taobao.org/tinymce-imageupload/download/tinymce-imageupload-1.0.5.tgz",
+  "_shasum": "9b499d0d276a4b6b23b595bc2c86b2b4a24e0a1f",
+  "_spec": "tinymce-imageupload",
+  "_where": "/Users/mars/Documents/tuan_wei/public/tinymce/plugins",
+  "author": {
+    "name": "junyanLiu"
+  },
+  "bugs": {
+    "url": "https://github.com/x-shadow-x/tinymce-imageupload/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "tinymce富文本图片上传插件",
+  "devDependencies": {
+    "axios": "^0.18.0"
+  },
+  "homepage": "https://github.com/x-shadow-x/tinymce-imageupload#readme",
+  "keywords": [
+    "tinymce",
+    "imageupload",
+    "图片上传"
+  ],
+  "license": "ISC",
+  "main": "index.js",
+  "name": "tinymce-imageupload",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/x-shadow-x/tinymce-imageupload.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.5"
+}

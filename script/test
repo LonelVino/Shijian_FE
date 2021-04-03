@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# test script
+#
+# This file is a hook script excuted while testing.
+# You can specify some commands to do.
+# 
+# NOTICE: You should return 0 when no error occurred.
+#
+# Copyright (C) 2016 Tiaozhan Net. All rights reserved.
+#########################################################
+
+set -e
+
+. /usr/lib/log
+
+info "Testing start..."
+
+#### NOW YOU CAN BEGIN FROM HERE ####
+
+cat >/runtime/APP/test.html <<EOF
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Nginx!</title>
+    <style>
+        h1 {text-align:center;}
+    </style>
+</head>
+<body>
+    <h1>Hello Nginx!<h1>
+    <hr/>
+</body>
+</html>
+EOF
+
+nginx
+nginx -V
+curl localhost/test.html
+
+#### THE END OF YOUR SCRIPT ####
+
+info "Testing complete."
+
+exit

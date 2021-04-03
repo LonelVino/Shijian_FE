@@ -1,0 +1,9 @@
+version=2
+rule=access:%ip:ipv4% %server_name:word% %user:word% [%timestamp:char-to:]%] "%method:word% %path:word% %protocol:char-to:"%" %code:number% %size:number% "%referer:char-to:"%" "%agent:char-to:"%"
+
+annotate=access:+tag="nginx.access"
+annotate=access:+severity="info"
+
+rule=error:%timestamp:string-to: [% [%severity:alpha%] %pid:number%#%tid:number%: %msg:rest%
+
+annotate=error:+tag="nginx.error"

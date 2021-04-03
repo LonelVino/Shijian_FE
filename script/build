@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# Build Script
+#
+# This file is a hook script excuted while building.
+# You can specify some commands to do.
+# 
+# NOTICE: You should return 0 when no error occurred.
+#
+# Copyright (C) 2016 Tiaozhan Net. All rights reserved.
+#########################################################
+
+set -e
+
+. /usr/lib/log
+info "Building start..."
+
+#### NOW YOU CAN BEGIN FROM HERE ####
+
+## nginx install
+apk add --update --no-cache nginx
+rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
+
+## nginx configure
+mkdir -p /etc/nginx/sites-enabled
+mv -f /runtime/config/nginx.conf /etc/nginx/nginx.conf
+mv -f /runtime/config/website.conf /etc/nginx/sites-enabled/website.conf
+mv -f /runtime/config/rsyslog/* /etc/rsyslog.d/
+mkdir -p /run/nginx # or nginx won't start
+mkdir -p /var/tmp/nginx
+#### THE END OF YOUR SCRIPT ####
+
+info "Building complete."
+
+exit
